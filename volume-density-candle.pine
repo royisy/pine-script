@@ -1,0 +1,46 @@
+//@version=5
+indicator("Volume Density Candle", "VDC")
+
+MAX_TRANS = 100
+AVG_TRANS = 50
+avgLength = input.int(20, "Average length", minval=1, maxval=200)
+excludeFirst = input.bool(false, "Exclude the first candle of the intraday session from the average")
+excludeLast = input.bool(true, "Exclude the last candle of the intraday session from the average")
+maxTransLimit = input.int(80, "Max transparency", minval=70, maxval=100)
+upColor = input.color(color.teal, "Up color")
+downColor = input.color(color.red, "Down color")
+
+float trans = 0
+if ta.tr(true) > 0 and not na(volume) and volume > 0
+    float sum = 0
+    count = 0
+    for i = 0 to avgLength - 1
+        if timeframe.isintraday and i > 0
+            if excludeFirst
+                if not na(time_tradingday[i + 1])
+                    if time_tradingday[i] != time_tradingday[i + 1]
+                        continue
+            if excludeLast
+                if time_tradingday[i] != time_tradingday[i - 1]
+                    continue
+        if ta.tr(true)[i] > 0
+            volumeDensity = volume[i] / ta.tr(true)[i]
+            sum := sum + volumeDensity
+            count += 1
+    float avgVolumeDensity = 0
+    if count > 0
+        avgVolumeDensity := sum / count
+    currentVolumeDensity = volume / ta.tr(true)
+    float deviationRate = 1
+    if avgVolumeDensity > 0
+        deviationRate := (currentVolumeDensity - avgVolumeDensity) / avgVolumeDensity
+    deviationRate := deviationRate > 1 ? 1 : deviationRate
+    deviationRate := deviationRate < -1 ? -1 : deviationRate
+    float diffTrans = (MAX_TRANS - AVG_TRANS) * deviationRate
+    trans := AVG_TRANS - diffTrans
+    trans := trans > maxTransLimit ? maxTransLimit : trans
+upColor := color.new(upColor, trans)
+downColor := color.new(downColor, trans)
+color = close >= open ? upColor : downColor
+
+plotcandle(open, high, low, close, color=color, wickcolor=color, bordercolor=color)
