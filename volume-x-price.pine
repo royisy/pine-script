@@ -1,0 +1,11 @@
+//@version=5
+indicator("Volume X Price")
+
+value = volume * ohlc4 / 1000000000
+
+trans = 50
+upColor = color.new(color.teal, trans)
+downColor = color.new(color.red, trans)
+color = close >= open ? upColor : downColor
+
+plot(value, style=plot.style_columns, color=color)
