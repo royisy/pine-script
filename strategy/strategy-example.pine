@@ -1,0 +1,26 @@
+//@version=5    
+strategy("Strategy Example", overlay=true)
+
+startYear = input.int(2020, "Start Year", minval=1900, maxval=2100)
+startMonth = input.int(1, "Start Month", minval=1, maxval=12)
+startDate = input.int(1, "Start Date", minval=1, maxval=31)
+endYear = input.int(2100, "End Year", minval=1900, maxval=2100)
+endMonth = input.int(1, "End Month", minval=1, maxval=12)
+endDate = input.int(1, "End Date", minval=1, maxval=31)
+startTime = timestamp(startYear, startMonth, startDate, 0, 0)
+endTime = timestamp(endYear, endMonth, endDate, 0, 0)
+inDateRange = time >= startTime and time < endTime
+
+maShort = ta.sma(close, 5)
+maLong = ta.sma(close, 20)
+enterLong = ta.crossover(maShort, maLong)
+enterShort = ta.crossunder(maShort, maLong)
+
+plot(maShort, color=color.orange)
+plot(maLong, color=color.blue)
+
+if inDateRange
+    strategy.entry("Entry", direction=strategy.long, when=enterLong)
+    strategy.exit("Exit", from_entry="Entry", stop=maLong, when=enterShort)
+else
+    strategy.close_all()
