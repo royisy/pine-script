@@ -3,7 +3,7 @@ indicator("Volume Density Candle", "VDC", overlay=true)
 
 TRANS_RANGE = 50
 avgLength = input.int(20, "Average length", minval=1, maxval=200)
-maxDeviationRate = input.float(1, "Max deviation rate", minval=0.1, maxval=10, step=0.1)
+maxDeviationRate = input.float(1, "Max deviation rate", minval=0.1, maxval=2, step=0.1)
 excludeFirst = input.bool(false, "Exclude the first candle of the intraday session from the average")
 excludeLast = input.bool(true, "Exclude the last candle of the intraday session from the average")
 maxTrans = input.int(80, "Max transparency", minval=70, maxval=100)
