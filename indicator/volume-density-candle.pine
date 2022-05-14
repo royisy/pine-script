@@ -1,12 +1,12 @@
 //@version=5
-indicator("Volume Density Candle", "VDC")
+indicator("Volume Density Candle", "VDC", overlay=true)
 
-MAX_TRANS = 100
-AVG_TRANS = 50
+TRANS_RANGE = 50
 avgLength = input.int(20, "Average length", minval=1, maxval=200)
+maxDeviationRate = input.float(1, "Max deviation rate", minval=0.1, maxval=10, step=0.1)
 excludeFirst = input.bool(false, "Exclude the first candle of the intraday session from the average")
 excludeLast = input.bool(true, "Exclude the last candle of the intraday session from the average")
-maxTransLimit = input.int(80, "Max transparency", minval=70, maxval=100)
+maxTrans = input.int(80, "Max transparency", minval=70, maxval=100)
 upColor = input.color(color.teal, "Up color")
 downColor = input.color(color.red, "Down color")
 
@@ -31,14 +31,14 @@ if ta.tr(true) > 0 and not na(volume) and volume > 0
     if count > 0
         avgVolumeDensity := sum / count
     currentVolumeDensity = volume / ta.tr(true)
-    float deviationRate = 1
+    float deviationRate = maxDeviationRate
     if avgVolumeDensity > 0
         deviationRate := (currentVolumeDensity - avgVolumeDensity) / avgVolumeDensity
-    deviationRate := deviationRate > 1 ? 1 : deviationRate
-    deviationRate := deviationRate < -1 ? -1 : deviationRate
-    float diffTrans = (MAX_TRANS - AVG_TRANS) * deviationRate
-    trans := AVG_TRANS - diffTrans
-    trans := trans > maxTransLimit ? maxTransLimit : trans
+        deviationRate := deviationRate > maxDeviationRate ? maxDeviationRate : deviationRate
+        deviationRate := deviationRate < -maxDeviationRate ? -maxDeviationRate : deviationRate
+    float diffTrans = TRANS_RANGE * deviationRate / maxDeviationRate
+    trans := TRANS_RANGE - diffTrans
+    trans := trans > maxTrans ? maxTrans : trans
 upColor := color.new(upColor, trans)
 downColor := color.new(downColor, trans)
 color = close >= open ? upColor : downColor
